@@ -1,0 +1,41 @@
+{
+  "name": "grunt-iis",
+  "description": "IIS Environment Installer for grunt",
+  "version": "0.1.0",
+  "author": {
+    "name": "Eduardo Pacheco",
+    "email": "du@kanema.com.br"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kanema/grunt-iis.git"
+  },
+  "main": "Gruntfile.js",
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "dependencies": {
+    "underscore": "~1",
+    "xml2js": "0.1.14"
+  },
+  "devDependencies": {
+    "async": "0.1.x",
+    "grunt-contrib-jshint": "~0.6.0",
+    "grunt-contrib-clean": "~0.4.0",
+    "grunt-contrib-nodeunit": "~0.2.0",
+    "grunt": "~0.4.2",
+    "shelljs": "~0.2.6"
+  },
+  "peerDependencies": {
+    "grunt": "~0.4.2"
+  },
+  "keywords": [
+    "gruntplugin",
+    "iis",
+    "windows",
+    "microsoft"
+  ]
+}
