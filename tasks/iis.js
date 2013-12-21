@@ -16,101 +16,121 @@ module.exports = function(grunt) {
 	var shell = require('shelljs');
 	
 	var appcmd = '%windir%\\system32\\inetsrv\\appcmd.exe';
-	var last_site;
 
 	var exec = function(cmd, cb) {
 		var output = shell.exec(cmd, { silent : true }).output;
-		cb(false, output)
+		if (cb) {
+			cb(output);
+		}
 	};
 	
-	var createApp = function(options,cb) {
-
-		options = options || {};
-		options.path = options.path || 'NewSite';
-		options.name = options.name || "Default Web Site";
-		options.appcmd = options.appcmd || appcmd;
-
-		//hold this to be used when creating app folders, etc
-		last_site = options.name;
-
-		exists('app',options.path,function(err,tf) {
-			if (!tf) {
-				var site_cmd = ' add app /site.name:"' + options.name + '" /path:"' + options.path + '"';
-				if (options.physicalPath) {
-					site_cmd += ' /physicalPath:"' + options.physicalPath + '"';
-				}
-				exec(appcmd + ' ' + site_cmd, function(err,tf) {
-					createAppPool({}, cb);
-				});
-			}
-			else {
-				cb(err,'Site ' + options.name + ' exists');
-			}
-		});
-	};
-
-	var createAppPool = function(options,cb) {
-		var poolname = typeof(options) == 'string' ? options : options.name;
-		var identity = typeof(options) == 'string' ? null : options.identity;
-		exists('apppool',poolname,function(err,tf) {
-			if (!tf) {
-				exec(appcmd + ' add apppool /name:"' + poolname + '"',function(err,stdout) {
-					if (cb) {
-						cb(err,stdout);
+	var App = {
+		create: {
+			pool: function(options, cb) {
+				App.get('apppool', 'APPPOOL.NAME', options.pool, function(pool) {
+					if ( ! pool) {
+						var cmd = appcmd + ' add apppool /name:"' + options.pool + '" /managedRuntimeVersion:"' + options.managedRuntimeVersion + '"';
+						exec(cmd, function(output) {
+							if (cb) {
+								App.get('apppool', 'APPPOOL.NAME', options.pool, function(pool) {
+									pool.created = true;
+									cb(pool);
+								});
+							}
+						});
+					} else {
+						if (cb) {
+							cb(pool);
+						}
 					}
 				});
-			} else if (cb) {
-				cb(null,'App pool ' + poolname + ' exists');
-			}
-		})
-	};
-
-	var list = function(type,cb) {
-		var parser = new xml2js.Parser()
-		exec(appcmd + ' list ' + type + ' /xml',function(err,outxml) {
-			parser.parseString(outxml,function(err,result) {
-				//
-				//  may return a single object if only 1 site exists
-				//
-				var mapped = _.isArray(result[type.toUpperCase()]) ? _.map(result[type.toUpperCase()],function(v) {
-					return v['@'];
-				}) : [result[type.toUpperCase()]['@']];
-
-				if (cb) {
-					cb(err,mapped);
-				}
-				else {
-					console.log(mapped);
-				}
-			});
-		});
-	};
-
-	var exists = function(type,name,cb) {
-		list(type,function(err,res) {
-			var match = null;
-			if (!err) {
-				match = _.find(res,function(v) {
-					var m = v[type.toUpperCase() + '.NAME'];
-					return m && m.toLowerCase() === name.toLowerCase();
+			},
+			app: function(options, cb) {
+				App.get('app', 'path', options.path, function(app) {
+					if ( ! app) {
+						var cmd = appcmd + ' add app /site.name:"' + options.site + '" /path:"/' + options.path + '/" /physicalPath:"' + options.physicalPath + '" /applicationPool:"' + options.pool + '"';
+						exec(cmd, function(output) {
+							if (cb) {
+								App.get('app', 'path', options.path, function(app) {
+									app.created = true;
+									cb(app);
+								});
+							}
+						});
+					} else {
+						App.update.vdir(app, options, function(app) {
+							if (cb) {
+								cb(app);
+							}
+						});
+					}
 				});
 			}
-			if (cb) {
-				cb(err,match ? true : false);
+		},
+		update: {
+			vdir: function(app, options, cb) {
+				var cmd = appcmd + ' set vdir "' + options.site + '/' + options.path + '/" -physicalPath:"' + options.physicalPath + '"';
+				exec(cmd, function(output) {
+					if (cb) {
+						App.get('app', 'path', options.path, function(app) {
+							app.vdir_updated = true;
+							cb(app);
+						});
+					}
+				});
 			}
-			else {
-				console.log(match);
-			}
-		});
+		},
+		get: function(type, key, value, cb) {
+			App.list(type, function(err, res) {
+				var match = null;
+				if ( ! err) {
+					match = _.find(res,function(v) {
+						var m = v[key];
+						return m && m.replace('/', '').toLowerCase() === value.toLowerCase();
+					});
+				}
+				cb(match);
+			});
+		},
+		list: function(type, cb) {
+			var parser = new xml2js.Parser();
+			exec(appcmd + ' list ' + type + ' /xml', function(outxml) {
+				parser.parseString(outxml, function(err,result) {
+				
+					var mapped = _.isArray(result[type.toUpperCase()]) ? _.map(result[type.toUpperCase()], function(v) {
+						return v['@'];
+					}) : [result[type.toUpperCase()]['@']];
+					
+					if (cb) {
+						cb(err, mapped);
+					}
+				});
+			});
+		}
 	};
 	
-	grunt.registerMultiTask('iis', 'administer iis 7 on windows', function() {
-		// init
-		var self = this;
-		createApp(self.data, function(err, rsp) {
-			if ( ! err) {
-			   console.log('App '+ self.path +' created.');
+	grunt.registerMultiTask('iis', 'IIS Environment Installer for grunt', function() {
+
+		var options = {};
+		options.site = this.data.site || 'Default Web Site';
+		options.path = this.data.path || 'NewSite';
+		options.pool = this.data.pool || options.path.replace(/\//g, "_");
+		options.managedRuntimeVersion = this.data.managedRuntimeVersion || 'v4.0';
+		options.physicalPath = this.data.physicalPath || path.dirname(__dirname);
+
+		App.create.pool(options, function(pool) {
+			if (pool.created) {
+				console.info('Apppool created.');
+			} else {
+				console.info('Apppool already exists.');
 			}
+			App.create.app(options, function(app) {
+				if (app.created) {
+					console.info('App created.');
+				} else {
+					console.info('App already exists.');
+				}
+			});
 		});
 	});
 

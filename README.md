@@ -1,6 +1,6 @@
 # grunt-iis
 
-> administer iis 7 on windows
+> IIS Environment Installer for grunt based in (https://github.com/Integrify/node-iis.git)
 
 ## Getting Started
 This plugin requires Grunt `~0.4.2`
