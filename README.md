@@ -37,17 +37,40 @@ grunt.initConfig({
 
 ### Options
 
-#### options.separator
+site	'Default Web Site';
+path	'NewSite'
+pool	'NewSite'
+managedRuntimeVersion	'v4.0'
+physicalPath
+
+#### options.site
 Type: `String`
-Default value: `',  '`
+Default value: `Default Web Site`
 
-A string value that is used to do something with whatever.
+A string value of site name.
 
-#### options.punctuation
+#### options.path
 Type: `String`
-Default value: `'.'`
+Default value: `NewSite`
 
-A string value that is used to do something else with whatever else.
+A string value of url path.
+
+#### options.pool
+Type: `String`
+Default value: `NewSite`
+
+A string value of poolapp, if null the same of path.
+
+#### options.managedRuntimeVersion
+Type: `String`
+Default value: `v4.0`
+
+A string value of framework.
+
+#### options.physicalPath
+Type: `String`
+
+A string value of full fisical path.
 
 ### Usage Examples
 
@@ -57,27 +80,13 @@ In this example, the default options are used to do something with whatever. So 
 ```js
 grunt.initConfig({
   iis: {
-    options: {},
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
-  },
-});
-```
-
-#### Custom Options
-In this example, custom options are used to do something else with whatever else. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result in this case would be `Testing: 1 2 3 !!!`
-
-```js
-grunt.initConfig({
-  iis: {
-    options: {
-      separator: ': ',
-      punctuation: ' !!!',
-    },
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
+    developer: {
+	  physicalPath : __dirname,
+      site : 'Default Web Site',
+	  path : 'NewSite',
+	  pool : 'NewSite',
+	  managedRuntimeVersion : 'v4.0'
+    }
   },
 });
 ```
@@ -86,4 +95,5 @@ grunt.initConfig({
 In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
 
 ## Release History
-_(Nothing yet)_
+1.0.1 - First version working.
+1.0.0 - First version, not working.
