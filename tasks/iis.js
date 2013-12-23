@@ -33,7 +33,9 @@ module.exports = function(grunt) {
 						exec(cmd, function(output) {
 							if (cb) {
 								App.get('apppool', 'APPPOOL.NAME', options.pool, function(pool) {
-									pool.created = true;
+									if (pool) {
+										pool.created = true;
+									}
 									cb(pool);
 								});
 							}
@@ -52,7 +54,9 @@ module.exports = function(grunt) {
 						exec(cmd, function(output) {
 							if (cb) {
 								App.get('app', 'path', options.path, function(app) {
-									app.created = true;
+									if (app) {
+										app.created = true;
+									}
 									cb(app);
 								});
 							}
@@ -73,7 +77,9 @@ module.exports = function(grunt) {
 				exec(cmd, function(output) {
 					if (cb) {
 						App.get('app', 'path', options.path, function(app) {
-							app.vdir_updated = true;
+							if (app) {
+								app.vdir_updated = true;
+							}
 							cb(app);
 						});
 					}
@@ -97,6 +103,11 @@ module.exports = function(grunt) {
 			exec(appcmd + ' list ' + type + ' /xml', function(outxml) {
 				parser.parseString(outxml, function(err,result) {
 				
+					if (result['ERROR']) {
+						grunt.log.error(result['ERROR']['@']['message']);
+						return;
+					}
+				
 					var mapped = _.isArray(result[type.toUpperCase()]) ? _.map(result[type.toUpperCase()], function(v) {
 						return v['@'];
 					}) : [result[type.toUpperCase()]['@']];
@@ -119,16 +130,23 @@ module.exports = function(grunt) {
 		options.physicalPath = this.data.physicalPath || path.dirname(__dirname);
 
 		App.create.pool(options, function(pool) {
-			if (pool.created) {
+			if (pool && pool.created) {
 				console.info('Apppool created.');
-			} else {
+			} else if (pool) {
 				console.info('Apppool already exists.');
+			} else {
+				console.info('Cant create Apppool.');
+				return;
 			}
 			App.create.app(options, function(app) {
-				if (app.created) {
+				if (app && app.created) {
 					console.info('App created.');
-				} else {
+					console.info('Running at: http://localhot/'+app.path);
+				} else if (app) {
 					console.info('App already exists.');
+					console.info('Running at: http://localhot/'+app.path);
+				} else {
+					console.info('Cant create Apppool.');
 				}
 			});
 		});
