@@ -1,7 +1,7 @@
 {
   "name": "grunt-iis",
   "description": "IIS Environment Installer for grunt",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": {
     "name": "Eduardo Pacheco",
     "email": "du@kanema.com.br"
@@ -19,13 +19,13 @@
   },
   "dependencies": {
     "underscore": "~1",
-    "xml2js": "0.1.14"
+    "xml2js": "0.1.14",
+    "shelljs": "~0.2.6"
   },
   "devDependencies": {
     "async": "0.1.x",
     "grunt-contrib-jshint": "~0.6.0",
-    "grunt": "~0.4.2",
-    "shelljs": "~0.2.6"
+    "grunt": "~0.4.2"
   },
   "peerDependencies": {
     "grunt": "~0.4.2"
@@ -35,5 +35,13 @@
     "iis",
     "windows",
     "microsoft"
-  ]
+  ],
+  "readme": "# grunt-iis\r\n\r\n> IIS Environment Installer for grunt based in (https://github.com/Integrify/node-iis.git)\r\n\r\n## Getting Started\r\nThis plugin requires Grunt `~0.4.2`\r\n\r\nIf you haven't used [Grunt](http://gruntjs.com/) before, be sure to check out the [Getting Started](http://gruntjs.com/getting-started) guide, as it explains how to create a [Gruntfile](http://gruntjs.com/sample-gruntfile) as well as install and use Grunt plugins. Once you're familiar with that process, you may install this plugin with this command:\r\n\r\n```shell\r\nnpm install grunt-iis --save-dev\r\n```\r\n\r\nOnce the plugin has been installed, it may be enabled inside your Gruntfile with this line of JavaScript:\r\n\r\n```js\r\ngrunt.loadNpmTasks('grunt-iis');\r\n```\r\n\r\n## The \"iis\" task\r\n\r\n### Overview\r\nIn your project's Gruntfile, add a section named `iis` to the data object passed into `grunt.initConfig()`.\r\n\r\n```js\r\ngrunt.initConfig({\r\n  iis: {\r\n    options: {\r\n      // Task-specific options go here.\r\n    },\r\n    your_target: {\r\n      // Target-specific file lists and/or options go here.\r\n    },\r\n  },\r\n});\r\n```\r\n\r\n### Options\r\n\r\nsite\t'Default Web Site';\r\npath\t'NewSite'\r\npool\t'NewSite'\r\nmanagedRuntimeVersion\t'v4.0'\r\nphysicalPath\r\n\r\n#### options.site\r\nType: `String`\r\nDefault value: `Default Web Site`\r\n\r\nA string value of site name.\r\n\r\n#### options.path\r\nType: `String`\r\nDefault value: `NewSite`\r\n\r\nA string value of url path.\r\n\r\n#### options.pool\r\nType: `String`\r\nDefault value: `NewSite`\r\n\r\nA string value of poolapp, if null the same of path.\r\n\r\n#### options.managedRuntimeVersion\r\nType: `String`\r\nDefault value: `v4.0`\r\n\r\nA string value of framework.\r\n\r\n#### options.physicalPath\r\nType: `String`\r\n\r\nA string value of full fisical path.\r\n\r\n### Usage Examples\r\n\r\n#### Default Options\r\nIn this example, the default options are used to do something with whatever. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result would be `Testing, 1 2 3.`\r\n\r\n```js\r\ngrunt.initConfig({\r\n  iis: {\r\n    developer: {\r\n\t  physicalPath : __dirname,\r\n      site : 'Default Web Site',\r\n\t  path : 'NewSite',\r\n\t  pool : 'NewSite',\r\n\t  managedRuntimeVersion : 'v4.0'\r\n    }\r\n  },\r\n});\r\n```\r\n\r\n## Contributing\r\nIn lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).\r\n\r\n## Release History\r\n1.0.1 - First version working.\r\n1.0.0 - First version, not working.\r\n",
+  "readmeFilename": "README.md",
+  "bugs": {
+    "url": "https://github.com/kanema/grunt-iis/issues"
+  },
+  "homepage": "https://github.com/kanema/grunt-iis",
+  "_id": "grunt-iis@0.1.1",
+  "_from": "grunt-iis@"
 }
