@@ -1,7 +1,7 @@
 {
   "name": "grunt-iis",
   "description": "IIS Environment Installer for grunt",
-  "version": "0.1.2",
+  "version": "0.1.5",
   "author": {
     "name": "Eduardo Pacheco",
     "email": "du@kanema.com.br"

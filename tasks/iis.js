@@ -2,7 +2,7 @@
  * grunt-iis
  * https://github.com/Integrify/node-iis
  *
- * Copyright (c) 2013 Eduardo Pacheco
+ * Copyright (c) 2014 Eduardo Pacheco
  * Licensed under the MIT license.
  */
 
@@ -69,6 +69,29 @@ module.exports = function(grunt) {
 						});
 					}
 				});
+			},
+			site: function(options, cb) {
+				App.get('site', 'SITE.NAME', options.site, function(site) {
+
+					if ( ! site) {
+						var cmd = appcmd + ' add site /name:"' + options.site + '" /physicalPath:"' + options.physicalPath + '" /bindings:"'+ options.bindings +'"';
+						console.info(cmd);
+						exec(cmd, function(output) {
+							if (cb) {
+								App.get('site', 'SITE.NAME', options.site, function(site) {
+									if (site) {
+										site.created = true;
+									}
+									cb(site);
+								});
+							}
+						});
+					} else {
+						if (cb) {
+							cb(site);
+						}
+					}
+				});
 			}
 		},
 		update: {
@@ -126,28 +149,39 @@ module.exports = function(grunt) {
 		options.site = this.data.site || 'Default Web Site';
 		options.path = this.data.path || 'NewSite';
 		options.pool = this.data.pool || options.path.replace(/\//g, "_");
+		options.bindings = this.data.bindings || 'http/*:80:localhost';
 		options.managedRuntimeVersion = this.data.managedRuntimeVersion || 'v4.0';
 		options.physicalPath = this.data.physicalPath || path.dirname(__dirname);
 
-		App.create.pool(options, function(pool) {
-			if (pool && pool.created) {
-				console.info('Apppool created.');
-			} else if (pool) {
-				console.info('Apppool already exists.');
+		App.create.site(options, function(site) {
+			if (site && site.created) {
+				console.info('Site created.');
+			} else if (site) {
+				console.info('Site already exists.');
 			} else {
-				console.info('Cant create Apppool.');
+				console.info('Cant create Site.');
 				return;
 			}
-			App.create.app(options, function(app) {
-				if (app && app.created) {
-					console.info('App created.');
-					console.info('Running at: http://localhot/'+app.path);
-				} else if (app) {
-					console.info('App already exists.');
-					console.info('Running at: http://localhot/'+app.path);
+			App.create.pool(options, function(pool) {
+				if (pool && pool.created) {
+					console.info('Apppool created.');
+				} else if (pool) {
+					console.info('Apppool already exists.');
 				} else {
 					console.info('Cant create Apppool.');
+					return;
 				}
+				App.create.app(options, function(app) {
+					if (app && app.created) {
+						console.info('App created.');
+						console.info('Running at: '+ options.bindings + app.path);
+					} else if (app) {
+						console.info('App already exists.');
+						console.info('Running at: ' + options.bindings + app.path);
+					} else {
+						console.info('Cant create Apppool.');
+					}
+				});
 			});
 		});
 	});

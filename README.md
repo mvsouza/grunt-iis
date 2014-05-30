@@ -61,6 +61,12 @@ Default value: `NewSite`
 
 A string value of poolapp, if null the same of path.
 
+#### options.bindings
+Type: `String`
+Default value: `http/*:81:localhost`
+
+The binding element contains two attributes to configure the binding information: bindingInformation and protocol. The bindingInformation attribute contains the IP address, the port number and, optionally, the host header for the site. The protocol attribute defines the protocol to use to communicate with the site.
+
 #### options.managedRuntimeVersion
 Type: `String`
 Default value: `v4.0`
@@ -85,15 +91,16 @@ grunt.initConfig({
       site : 'Default Web Site',
 	  path : 'NewSite',
 	  pool : 'NewSite',
+	  bindings: 'http/*:80:localhost',
 	  managedRuntimeVersion : 'v4.0'
     }
   },
 });
 ```
 
-## Contributing
-In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
-
 ## Release History
+```js
+1.0.5 - Include site creation and bindings values.
 1.0.1 - First version working.
 1.0.0 - First version, not working.
+```
