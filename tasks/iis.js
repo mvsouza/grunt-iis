@@ -33,9 +33,7 @@ module.exports = function(grunt) {
 						exec(cmd, function(output) {
 							if (cb) {
 								App.get('apppool', 'APPPOOL.NAME', options.pool, function(pool) {
-									if (pool) {
-										pool.created = true;
-									}
+									pool.created = true;
 									cb(pool);
 								});
 							}
@@ -54,9 +52,28 @@ module.exports = function(grunt) {
 						exec(cmd, function(output) {
 							if (cb) {
 								App.get('app', 'path', options.path, function(app) {
-									if (app) {
-										app.created = true;
-									}
+									app.created = true;
+									cb(app);
+								});
+							}
+						});
+					} else {
+						App.update.app(app, options, function(app) {
+							if (cb) {
+								cb(app);
+							}
+						});
+					}
+				});
+			},
+			vdir: function(options, cb){
+				App.get('vdir', 'path', options.path, function(app) {
+					if ( ! app) {
+						var cmd = appcmd + ' add vdir /app.name:"' + options.site + '/" /path:"/' + options.path + '" /physicalPath:"' + options.physicalPath +'"';
+						exec(cmd, function(output) {
+							if (cb) {
+								App.get('vdir', 'path', options.path, function(app) {
+									app.created = true;
 									cb(app);
 								});
 							}
@@ -69,40 +86,26 @@ module.exports = function(grunt) {
 						});
 					}
 				});
-			},
-			site: function(options, cb) {
-				App.get('site', 'SITE.NAME', options.site, function(site) {
-
-					if ( ! site) {
-						var cmd = appcmd + ' add site /name:"' + options.site + '" /physicalPath:"' + options.physicalPath + '" /bindings:"'+ options.bindings +'"';
-						console.info(cmd);
-						exec(cmd, function(output) {
-							if (cb) {
-								App.get('site', 'SITE.NAME', options.site, function(site) {
-									if (site) {
-										site.created = true;
-									}
-									cb(site);
-								});
-							}
-						});
-					} else {
-						if (cb) {
-							cb(site);
-						}
-					}
-				});
 			}
 		},
 		update: {
-			vdir: function(app, options, cb) {
+			app: function(app, options, cb) {
 				var cmd = appcmd + ' set vdir "' + options.site + '/' + options.path + '/" -physicalPath:"' + options.physicalPath + '"';
 				exec(cmd, function(output) {
 					if (cb) {
 						App.get('app', 'path', options.path, function(app) {
-							if (app) {
-								app.vdir_updated = true;
-							}
+							app.vdir_updated = true;
+							cb(app);
+						});
+					}
+				});
+			},
+			vdir: function(app, options, cb) {
+				var cmd = appcmd + ' set vdir "' + options.site + '/' + options.path + '/" -physicalPath:"' + options.physicalPath + '"';
+				exec(cmd, function(output) {
+					if (cb) {
+						App.get('vdir', 'path', options.path, function(app) {
+							app.vdir_updated = true;
 							cb(app);
 						});
 					}
@@ -125,16 +128,11 @@ module.exports = function(grunt) {
 			var parser = new xml2js.Parser();
 			exec(appcmd + ' list ' + type + ' /xml', function(outxml) {
 				parser.parseString(outxml, function(err,result) {
-				
-					if (result['ERROR']) {
-						grunt.log.error(result['ERROR']['@']['message']);
-						return;
-					}
-				
+					
 					var mapped = _.isArray(result[type.toUpperCase()]) ? _.map(result[type.toUpperCase()], function(v) {
 						return v['@'];
 					}) : [result[type.toUpperCase()]['@']];
-					
+
 					if (cb) {
 						cb(err, mapped);
 					}
@@ -149,41 +147,38 @@ module.exports = function(grunt) {
 		options.site = this.data.site || 'Default Web Site';
 		options.path = this.data.path || 'NewSite';
 		options.pool = this.data.pool || options.path.replace(/\//g, "_");
-		options.bindings = this.data.bindings || 'http/*:80:localhost';
 		options.managedRuntimeVersion = this.data.managedRuntimeVersion || 'v4.0';
 		options.physicalPath = this.data.physicalPath || path.dirname(__dirname);
+		options.type = this.data.type || 'app';
 
-		App.create.site(options, function(site) {
-			if (site && site.created) {
-				console.info('Site created.');
-			} else if (site) {
-				console.info('Site already exists.');
-			} else {
-				console.info('Cant create Site.');
-				return;
-			}
-			App.create.pool(options, function(pool) {
-				if (pool && pool.created) {
-					console.info('Apppool created.');
-				} else if (pool) {
-					console.info('Apppool already exists.');
+		if(options.type=='vdir'){
+			App.create.vdir(options, function(app) {
+				if (app.created) {
+					console.info('VDIR created.');
 				} else {
-					console.info('Cant create Apppool.');
-					return;
+					console.info('VDIR already exists.');
 				}
-				App.create.app(options, function(app) {
-					if (app && app.created) {
-						console.info('App created.');
-						console.info('Running at: '+ options.bindings + app.path);
-					} else if (app) {
-						console.info('App already exists.');
-						console.info('Running at: ' + options.bindings + app.path);
-					} else {
-						console.info('Cant create Apppool.');
-					}
-				});
 			});
-		});
+		}
+		else if (options.type=='app'){
+			App.create.pool(options, function(pool) {
+				if (pool.created) {
+					console.info('Apppool created.');
+				} else {
+					console.info('Apppool already exists.');
+				}
+					App.create.app(options, function(app) {
+						if (app.created) {
+							console.info('App created.');
+						} else {
+							console.info('App already exists.');
+						}
+					});
+			});
+		}
+		else{
+			console.info('Invalid type configuration.');
+		}
 	});
 
 };
